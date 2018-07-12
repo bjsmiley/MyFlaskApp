@@ -1,29 +1,15 @@
 from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
-# from data import Articles
 from password import root_password
-#from flask_mysqldb import MySQL
 import mysql.connector as mysql
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
-# from functools import wraps
 import functools
 
 app = Flask(__name__)
 
-# Config MySQL
-# app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = root_password
-# app.config['MYSQL_DB'] = 'myflaskapp'
-# app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
 cnx = mysql.connect(user='root',password=root_password, database='myflaskapp', host='localhost', auth_plugin='mysql_native_password')
 
-
-# init MYSQL
-#mysql = MySQL(app)
-
-# Articles = Articles()
+# Routes
 
 # Index
 @app.route('/')
@@ -47,7 +33,7 @@ def articles():
     cur.close()
 
     if articles is not None:
-        app.logger.info(articles)
+        # app.logger.info(articles)
         return render_template('articles.html', articles=articles)
     else:
         msg = 'No Articles Found'
@@ -85,26 +71,12 @@ def register():
         email = form.email.data
         username = form.username.data
         password = sha256_crypt.encrypt(str(form.password.data))
-
-        '''
-        # Create cursor
-        cur = mysql.connect.cursor()
-        # Execute query
-        cur.execute("INSERT INTO users(name, email, username, password) VALUES(%s, %s, %s, $s)", (name, email, username, password))
-        # Commit to DB
-        mysql.connection.commit()
-        # Close connection
-        cur.close()
-        '''
-        # Windows Way
         
         cur = cnx.cursor()
         cur.execute("INSERT INTO users (name, email, username, password) VALUES (%s, %s, %s, %s)", (name, email, username, password))
         cnx.commit()
         cur.close()
         
-
-
         flash('You are now registered and can log in', 'success')
 
         return redirect(url_for('login'))
@@ -130,7 +102,7 @@ def login():
 
         if data is not None:
             # get the stored hash
-            app.logger.info(data)
+            # app.logger.info(data)
             password = data[4]
 
             if sha256_crypt.verify(password_candidate, password):
@@ -183,7 +155,7 @@ def dashboard():
     cur.close()
 
     if articles is not None:
-        app.logger.info(articles)
+        # app.logger.info(articles)
         return render_template('dashboard.html', articles=articles)
     else:
         msg = 'No Articles Found'
