@@ -218,6 +218,58 @@ def add_article():
     
     return render_template('add_article.html', form=form)
 
+# Edit article
+@app.route('/edit_article/<string:id>', methods=['GET','POST'])
+@is_logged_in
+def edit(id):
+    
+    # Create cursor
+    cur = cnx.cursor()
+
+    # Get article by id
+    cur.execute('SELECT * FROM articles WHERE id = %s',[id])
+
+    article = cur.fetchone()
+
+    form = ArticleForm(request.form)
+    # Now Populate the form fields
+    form.title.data = article[1]
+    form.body.data = article[3]
+
+    if request.method == 'POST' and form.validate():
+        title = request.form['title']
+        body = request.form['body']
+
+        # Create Cursor
+        cur = cnx.cursor()
+        # Execute
+        cur.execute('UPDATE articles SET title=%s, body=%s WHERE id = %s',
+                    (title,body,id))
+        # Commit
+        cnx.commit()
+        cur.close()
+
+        flash('Article Updated','success')
+
+        return redirect(url_for('dashboard'))
+    
+    return render_template('edit_article.html', form=form)
+
+# Delete Article
+@app.route('/delete_article/<string:id>', methods=['POST'])
+@is_logged_in
+def delete_article(id):
+    #Create Cursor
+    cur = cnx.cursor()
+
+    #Execute Delete
+    cur.execute('DELETE FROM articles WHERE id = %s',[id])
+    cnx.commit()
+    cur.close()
+
+    flash('Article Deleted','success')
+
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
     app.secret_key='secret123'
